@@ -4,7 +4,7 @@ HELIOS-FWF (ver. 0.1) - Full-WaveForm experimental implementation within the Hei
 ### Features
 
 The following FWF features are included to the latest FWF HELIOS build:
- - BRDF reflectane model
+ - BRDF reflectance model
  - Gaussian decomposition to extract multiple echo returns (point coordinates,intensity,width,return number)
  
 Future features will include:
