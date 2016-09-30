@@ -1,2 +1,2 @@
-# helios
-HELIOS - the Heidelberg LiDAR Operations Simulator - is a software package for interactive real-time simulation and visualization of terrestrial, mobile and airborne laser scan surveys written in Java.
+# HELIOS-FWF
+HELIOS-FWF - Full-WaveForm experimental implementation within the Heidelberg LiDAR Operations Simulator.
