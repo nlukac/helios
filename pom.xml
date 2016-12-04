@@ -18,11 +18,11 @@
 
 
 	<groupId>de.uni-hd.giscience</groupId>
-	<artifactId>helios</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<artifactId>heliosFWF</artifactId>
+	<version>0.0.1-FWF</version>
 	<packaging>jar</packaging>
 
-	<name>helios</name>
+	<name>heliosFWF</name>
 	<url>http://maven.apache.org</url>
 
 
