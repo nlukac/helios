@@ -1,2 +1,2 @@
 # HELIOS-FWF
-HELIOS-FWF - Full-WaveForm experimental implementation within the Heidelberg LiDAR Operations Simulator.
+HELIOS-FWF (ver. 1.0) - Full-WaveForm experimental implementation within the Heidelberg LiDAR Operations Simulator.
