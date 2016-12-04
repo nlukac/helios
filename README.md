@@ -28,8 +28,8 @@ point.x point.y point.z intensity echoWidth FWFIndex returnNumber objectId
 - point (double) - Coordinates of 3D captured points from echo returns in FWF signal.
 - intensity (double) - Intensity of the return [W].
 - echoWidth (double) - The full width at half maximum of the echo-return [ns].
-- FWFIndex (integer) - The index of the FWF signal.
 - returnNumber (integer) - The corresponding return number.
+- FWFIndex (integer) - The index of the FWF signal.
 - objectId (string) - The id of the hit object.
 
 ### Output FWF format
