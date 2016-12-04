@@ -231,10 +231,10 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		ArrayList<Double> fullwave = new ArrayList<Double>(Collections.nCopies(cfg_numFullwaveBins, 0.0));
 
 		// Gaussian model fitting init
-    	double[][] xs = new double[fullwave.size()][1];
-    	for(int i=0;i<fullwave.size();++i) xs[i][0]=((double)i);
-    	double[] zs = new double[fullwave.size()];
-    	//
+		double[][] xs = new double[fullwave.size()][1];
+		for(int i=0;i<fullwave.size();++i) xs[i][0]=((double)i);
+		double[] zs = new double[fullwave.size()];
+		//
     	
 		// 3. calc time at maximum distance (i.e. total beam time)
 		double maxHitTime_ns = maxHitDist_m / cfg_speedOfLight_mPerNanosec + detector.scanner.getPulseLength_ns(); // [ns]
@@ -277,13 +277,16 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		for (int i = 0; i < fullwave.size(); ++i) {
 			zs[i]=fullwave.get(i);
 		}
-		
+
+		Fitter fit = new NonLinearSolver(gaussianModel);
+		fit.setData(xs, zs);
+        
 		for (int i = 0; i < fullwave.size(); ++i) {
 			if(fullwave.get(i)<1) continue;
 			
 			// peak detection
 			boolean hasPeak = true;
-			for (int j = Math.max(0, i - 1); j < Math.max(0, i - win_size); j--) {
+			for (int j = Math.max(0, i - 1); j > Math.max(0, i - win_size); j--) {
 				if (fullwave.get(j) >= fullwave.get(i)) {
 					hasPeak = false;
 					break;
@@ -300,8 +303,6 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 
 			if (hasPeak) {
 				// Gaussian model fitting
-		        Fitter fit = new NonLinearSolver(gaussianModel);
-		        fit.setData(xs, zs);
 		        fit.setParameters(new double[]{0, fullwave.get(i), i, 1});
 		        fit.fitData();
 		        double echo_width = (double)fit.getParameters()[3];
