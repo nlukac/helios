@@ -59,27 +59,6 @@ public class LidarSim {
 
 		if (surveyFilePath.equals("")) {
 			surveyFilePath = "data/surveys/demo/tls_arbaro_demo.xml";
-
-			surveyFilePath = "data/surveys/demo/mls_tractor.xml";
-			surveyFilePath = "data/surveys/demo/felsding.xml";
-			
-
-			surveyFilePath = "data/surveys/uav_terrain2.xml";
-			
-			surveyFilePath = "data/surveys/tractortest.xml";
-
-			surveyFilePath = "data/surveys/als_washington.xml";
-
-			surveyFilePath = "data/surveys/simon/als_terrain2.xml";
-			surveyFilePath = "data/surveys/simon/tls_simon_trail.xml";
-			
-			
-			
-			
-			surveyFilePath = "data/surveys/demo/tls_terrain1.xml";
-			
-			surveyFilePath = "data/surveys/premium/tls_hrusov_castle.xml";
-			surveyFilePath = "data/surveys/demo/tls_arbaro_demo.xml";
 		}
 
 		// Load survey description from XML file:
@@ -99,6 +78,7 @@ public class LidarSim {
 		if (!headless) {
 			JMEFrontEnd frontend = new JMEFrontEnd();
 			frontend.init(playback);
+
 			frontend.start();
 			playback.pause(true);
 		}

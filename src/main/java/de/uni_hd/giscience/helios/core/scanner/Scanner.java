@@ -20,6 +20,10 @@ public class Scanner extends Asset {
 	public Platform platform = null;
 	public AbstractDetector detector = null;
 
+	// FWF settings
+	public FWFSettings FWF_settings;
+	//
+	
 	// Misc:
 	public String cfg_device_visModelPath = "";
 
@@ -63,7 +67,10 @@ public class Scanner extends Asset {
 		beamDeflector.applySettings(settings);
 	}
 
-	
+	public void applySettingsFWF(FWFSettings settings) {
+		FWF_settings=settings;
+	}
+
 	public void doSimStep(ExecutorService execService) {
 
 		// Update head attitude (we do this even when the scanner is inactive):

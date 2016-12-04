@@ -11,6 +11,7 @@ public class Measurement {
 	public Vector3D beamOrigin = new Vector3D(0, 0, 0);
 	public double distance = 0;
 	public double intensity = 0;
-	public int returnNumber;
-	public int fullwaveIndex;
+	public double echo_width = 0;
+	public int returnNumber = 0;
+	public int fullwaveIndex = 0;
 }

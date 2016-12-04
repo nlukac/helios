@@ -1,5 +1,3 @@
-// TODO 2: Tell Niko about radius calculation
-
 package de.uni_hd.giscience.helios.core.scanner.detector;
 
 import java.util.ArrayList;
@@ -14,7 +12,31 @@ import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import de.uni_hd.giscience.helios.core.scene.RaySceneIntersection;
 import de.uni_hd.giscience.helios.core.scene.Scene;
 
+import org.orangepalantir.leastsquares.Fitter;
+import org.orangepalantir.leastsquares.Function;
+import org.orangepalantir.leastsquares.fitters.NonLinearSolver;
+
 public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
+    Function gaussianModel = new Function(){
+        @Override
+        public double evaluate(double[] values, double[] parameters) {
+            double A = parameters[0];
+            double B = parameters[1];
+            double C = parameters[2];
+            double D = parameters[3];
+            double x = values[0];
+            return A + B * Math.exp( - Math.pow(((x-C)/D), 2) );
+        }
+        @Override
+        public int getNParameters() {
+            return 4;
+        }
+
+        @Override
+        public int getNInputs() {
+            return 1;
+        }
+    };
 
 	FullWaveformPulseDetector fwDetector;
 
@@ -23,6 +45,43 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		super((AbstractDetector) detector, absoluteBeamOrigin, absoluteBeamAttitude, currentPulseNum, currentGpsTime);
 
 		fwDetector = detector;
+	}
+
+	/*
+	 * private double calcAtmosphericAttenuation(double range, double visibilityDistance, double wavelength) { // Calculate the aerosol scattering (based on: Steinvall, Waveform
+	 * simulation for 3-d sensing laser radars, 2000) double q; if (visibilityDistance > 50) q = 1.6; else if (visibilityDistance > 6 && visibilityDistance < 50) q = 1.3; else q =
+	 * 0.585 * Math.pow(visibilityDistance, 0.33);
+	 * 
+	 * double AER = (3.91 / visibilityDistance) * Math.pow((wavelength / 0.55), -q);
+	 * 
+	 * return (Math.exp(-2 * range * AER)); }
+	 */
+
+	// LiDAR energy equation (fine tuning required) + spatial distribution equation
+	double calcIntensity(double incidenceAngle, double distance, double reflect_p, double radius) {
+		// input parameters to intensity calculation
+		double Pt = detector.scanner.FWF_settings.peakEnergy; // peak transmitted energy at center of the beam profile
+		double eta_sys = detector.scanner.FWF_settings.scannerEfficiency; // LiDAR scanner efficiency
+
+		// double visibilityDistance = 100; // atmospheric visibility [km]
+		double eta_atm = detector.scanner.FWF_settings.atmosphericVisibility; // calcAtmosphericAttenuation(distance, visibilityDistance, wavelength); // atmospheric attenuation
+
+		double A = reflect_p;
+		double B = 1 - reflect_p;
+		double D = detector.scanner.FWF_settings.apartureDiameter; // receiver aperture diameter [m]
+		double reflectanceBRDF = ((Math.PI * D * D) / 4.0)
+				* ((A / Math.pow(Math.cos(incidenceAngle), 6)) * Math.exp(Math.tan(incidenceAngle) * Math.tan(incidenceAngle)) + B * Math.cos(incidenceAngle));
+
+		// transmitted energy with 'radius' away from center of the beam profile
+		double wavelength = detector.scanner.FWF_settings.scannerWaveLength / 1000000.0;
+		double w0 = (2 * wavelength) / (Math.PI * detector.scanner.cfg_device_beamDivergence_rad);
+		double omega = (distance * wavelength) / (Math.PI * w0 * w0);
+		double omega0 = 1 - distance / detector.cfg_device_rangeMin_m;
+		double w = w0 * Math.sqrt(omega * omega + omega0 * omega0);
+		double Pt2 = Pt * ((w0 / w) * (w0 / w)) * Math.exp((-2 * radius * radius) / (w * w));
+
+		// output intensity (based on: Carlsson et al, Signature simulation and signal analysis for 3-D laser radar, 2001)
+		return (Pt2 * reflectanceBRDF * Math.cos(incidenceAngle) * eta_atm * eta_sys);
 	}
 
 	// time distribution equation required to calculate the pulse beam energy increasing and decreasing in time
@@ -47,19 +106,17 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 
 	private void captureFullWave(ArrayList<Double> fullwave, int fullwaveIndex, double max_time, Vector3D beamOrigin, Vector3D beamDir, Long gpstime) {
 		// add noise to fullwave
-		double precision = 0.001 * Collections.max(fullwave);
-		//double error = -precision + Math.random() * (precision * 2);
-		//error += boxMullerRandom(0.0, this.detector.cfg_device_accuracy_m / 2);
-		// for (Double f : fullwave) f+=error;
-
+		/*
+		double precision = 0.01 * Collections.max(fullwave);
+		double error = -precision + Math.random() * (precision * 2);
+		error += boxMullerRandom(0.0, this.detector.cfg_device_accuracy_m / 2);
+		 for (Double f : fullwave) f+=error;
+		*/
 		fwDetector.writeFullWave(fullwave, fullwaveIndex, max_time, beamOrigin, beamDir, gpstime);
 	}
 
 	@Override
 	public void run() {
-
-		
-		
 		Scene scene = detector.scanner.platform.scene;
 
 		Vector3D beamDir = absoluteBeamAttitude.applyTo(forward);
@@ -165,15 +222,20 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 
 		// 2. create full waveform with t_max entries
 
-		// TODO 3: Make these values configurable in XML
-		int cfg_numTimeBins = 50; // discretize the time wave into 100 bins (time_step = beam pulse length [ns] / 100)
-		int cfg_numFullwaveBins = 500; // discretize the time full waveform into 200 bins (time_step = total_time [ns] / 200)
+		int cfg_numTimeBins = detector.scanner.FWF_settings.numFullwaveBins; // discretize the time wave into X bins (time_step = beam pulse length [ns] / X)
+		int cfg_numFullwaveBins = detector.scanner.FWF_settings.numTimeBins; // discretize the time full waveform into X bins (time_step = total_time [ns] / X)
 
 		ArrayList<Double> time_wave = new ArrayList<Double>();
 		int peakIntensityIndex = timeWaveFunction(time_wave, cfg_numTimeBins);
 
 		ArrayList<Double> fullwave = new ArrayList<Double>(Collections.nCopies(cfg_numFullwaveBins, 0.0));
 
+		// Gaussian model fitting init
+    	double[][] xs = new double[fullwave.size()][1];
+    	for(int i=0;i<fullwave.size();++i) xs[i][0]=((double)i);
+    	double[] zs = new double[fullwave.size()];
+    	//
+    	
 		// 3. calc time at maximum distance (i.e. total beam time)
 		double maxHitTime_ns = maxHitDist_m / cfg_speedOfLight_mPerNanosec + detector.scanner.getPulseLength_ns(); // [ns]
 
@@ -192,23 +254,6 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 
 			double blubb = (detector.scanner.getPulseLength_ns() / (double) cfg_numTimeBins);
 
-			// Old loops:
-			/*
-			 * // Loop from start of wave to peak (actually, backwards from peak to start): for (int i = 0; i < peakIntensityIndex; ++i) {
-			 * 
-			 * double time_tmp = wavePeakTime_ns - (peakIntensityIndex - i) * blubb; // [ns]
-			 * 
-			 * int fullwaveBinIndex = (int) ((time_tmp / maxHitTime_ns) * cfg_numFullwaveBins); fullwave.set(fullwaveBinIndex, time_wave.get(i) * entryIntensity); }
-			 * 
-			 * // Loop from peak of wave to end: for (int i = peakIntensityIndex, j = 0; i < time_wave.size(); ++i, ++j) {
-			 * 
-			 * double time_tmp = wavePeakTime_ns + (j) * blubb; // [ns]
-			 * 
-			 * int fullwaveBinIndex = (int) ((time_tmp / maxHitTime_ns) * cfg_numFullwaveBins); fullwave.set(fullwaveBinIndex, time_wave.get(i) * entryIntensity); }
-			 */
-
-			// New Loop:
-
 			double time_start = wavePeakTime_ns - (peakIntensityIndex * blubb);
 
 			for (int i = 0; i < time_wave.size(); ++i) {
@@ -219,78 +264,81 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 				fullwave.set(fullwaveBinIndex, time_wave.get(i) * entryIntensity);
 			}
 		}
-		// TODO 2: Can multiple returns overlap here?
 
 		// ########### END Iterate over waveform data ###########
 
-		// ############### BEGIN Calculate average intensity ############
-		double avgIntensity = 0;
-		int numPositive = 0;
+		// ############ BEGIN Extract points from waveform data via Gaussian decomposition ################
+		int num_returns = 0;
+		int win_size = 10; // search for peaks around [-win_size, win_size]
+		double min_wave_width=detector.scanner.FWF_settings.minEchoWidth; // [ns]
+
+		//int start_i = (int)((detector.cfg_device_rangeMin_m/0.299792458) / (maxHitTime_ns/fullwave.size()))+1;
 
 		for (int i = 0; i < fullwave.size(); ++i) {
-			if (fullwave.get(i) > 0) {
-				avgIntensity += fullwave.get(i);
-				numPositive++;
+			zs[i]=fullwave.get(i);
+		}
+		
+		for (int i = 0; i < fullwave.size(); ++i) {
+			if(fullwave.get(i)<1) continue;
+			
+			// peak detection
+			boolean hasPeak = true;
+			for (int j = Math.max(0, i - 1); j < Math.max(0, i - win_size); j--) {
+				if (fullwave.get(j) >= fullwave.get(i)) {
+					hasPeak = false;
+					break;
+				}
 			}
-		}
-
-		if (numPositive == 0) {
-			return;
-		}
-
-		avgIntensity /= (double) numPositive;
-		// ############### END Calculate average intensity ############
-
-		// ############ BEGIN Extract points from waveform data ################
-		int num_returns = 0;
-
-		int win_size = 10; // search for peaks around [-win_size, win_size]
-
-		for (int i = 1; i < fullwave.size() - 1; ++i) {
-
-			// TODO 2: Ask Niko why intensity needs to be above average to be a peak
-			if (fullwave.get(i) > avgIntensity) {
-
-				boolean hasPeak = false;
-
-				for (int j = Math.max(0, i - win_size); j < Math.min(fullwave.size(), i + win_size); j++) {
-
-					// TODO 1: Understand this
-					if (fullwave.get(i) < fullwave.get(j)) {
-
-						hasPeak = true;
+			if(hasPeak) {
+				for (int j = Math.min(fullwave.size(), i + 1); j < Math.min(fullwave.size(), i + win_size); j++) {
+					if (fullwave.get(j) >= fullwave.get(i)) {
+						hasPeak = false;
 						break;
 					}
 				}
+			}
 
-				if (hasPeak) {
-					double distance = cfg_speedOfLight_mPerNanosec * ((i / (double) cfg_numFullwaveBins) * maxHitTime_ns);
+			if (hasPeak) {
+				// Gaussian model fitting
+		        Fitter fit = new NonLinearSolver(gaussianModel);
+		        fit.setData(xs, zs);
+		        fit.setParameters(new double[]{0, fullwave.get(i), i, 1});
+		        fit.fitData();
+		        double echo_width = (double)fit.getParameters()[3];
 
-					// ########## BEGIN Build list of objects that produced this return ###########
-				
-					double minDifference = Double.MAX_VALUE;
-					RaySceneIntersection closestIntersection = null;
-
-					for (RaySceneIntersection intersect : intersects) {
-						double intersectDist = intersect.point.distance(absoluteBeamOrigin);
-
-						if (Math.abs(intersectDist - distance) < minDifference) {
-							minDifference = Math.abs(intersectDist - distance);
-							closestIntersection = intersect;
-						}
-					}
-
-					String hitObject = null;
-					if (closestIntersection != null) {
-						//objects.add(closestIntersection.prim.part.id);
-						hitObject = closestIntersection.prim.part.mId;
-					}
-					// ########## END Build list of objects that produced this return ###########
-
-					capturePoint(absoluteBeamOrigin, beamDir, distance, fullwave.get(i), num_returns + 1, currentPulseNum, hitObject);
-
-					++num_returns;
+				if(echo_width<min_wave_width) {
+					continue;
 				}
+					
+				// ########## END echo location, intensity and width extraction via Gaussian decomposition ###########
+				
+				
+				double distance = cfg_speedOfLight_mPerNanosec * ((i / (double) cfg_numFullwaveBins) * maxHitTime_ns);
+
+				// ########## BEGIN Build list of objects that produced this return ###########
+			
+				double minDifference = Double.MAX_VALUE;
+				RaySceneIntersection closestIntersection = null;
+
+				for (RaySceneIntersection intersect : intersects) {
+					double intersectDist = intersect.point.distance(absoluteBeamOrigin);
+
+					if (Math.abs(intersectDist - distance) < minDifference) {
+						minDifference = Math.abs(intersectDist - distance);
+						closestIntersection = intersect;
+					}
+				}
+
+				String hitObject = null;
+				if (closestIntersection != null) {
+					//objects.add(closestIntersection.prim.part.id);
+					hitObject = closestIntersection.prim.part.mId;
+				}
+				// ########## END Build list of objects that produced this return ###########
+
+				capturePoint(absoluteBeamOrigin, beamDir, distance, fullwave.get(i), echo_width, num_returns + 1, currentPulseNum, hitObject);
+
+				++num_returns;
 			}
 		}
 

@@ -108,7 +108,7 @@ public abstract class AbstractPulseRunnable implements Runnable {
 		return (Pt2 * reflectanceBRDF * Math.cos(incidenceAngle) * eta_atm * eta_sys);
 	}
 
-	void capturePoint(Vector3D beamOrigin, Vector3D beamDir, double distance, double intensity, int returnNumber, int fullwaveIndex, String hitObjectId) {
+	void capturePoint(Vector3D beamOrigin, Vector3D beamDir, double distance, double intensity, double echo_width, int returnNumber, int fullwaveIndex, String hitObjectId) {
 
 		// Abort if point distance is below mininum scanner range:
 		if (distance < detector.cfg_device_rangeMin_m) {
@@ -129,6 +129,7 @@ public abstract class AbstractPulseRunnable implements Runnable {
 		m.position = pointPos;
 		m.distance = distance;
 		m.intensity = intensity;
+		m.echo_width = echo_width;
 		m.returnNumber = returnNumber;
 		m.fullwaveIndex = fullwaveIndex;
 		m.beamOrigin = beamOrigin;
