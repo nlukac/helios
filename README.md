@@ -23,7 +23,7 @@ Future features will include:
 
 ### Output point format
 
-point.x point.y point.z intensity echoWidth FWFIndex returnNumber objectId
+*point.x point.y point.z intensity echoWidth FWFIndex returnNumber objectId*
 
 - point (double) - Coordinates of 3D captured points from echo returns in FWF signal.
 - intensity (double) - Intensity of the return [W].
@@ -34,7 +34,7 @@ point.x point.y point.z intensity echoWidth FWFIndex returnNumber objectId
 
 ### Output FWF format
 
-FWFIndex beamOrigin.x beamOrigin.y beamOrigin.z beamDir.x beamDir.y beamDir.z maxTime gpsTime FWFIntensities
+*FWFIndex beamOrigin.x beamOrigin.y beamOrigin.z beamDir.x beamDir.y beamDir.z maxTime gpsTime FWFIntensities*
 
 - FWFIndex (integer) - The index of the FWF signal (in order to match corresponding points)
 - beamOrigin (double) - 3D point of the beam's origin.
