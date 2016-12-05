@@ -44,10 +44,16 @@
 			<id>jmonkeyengine</id>
 			<url>http://dl.bintray.com/jmonkeyengine/org.jmonkeyengine</url>
 		</repository>
-
+<!--
 		<repository>
 			<id>lemur</id>
 			<url>https://dl.bintray.com/simsilica/Sim-tools/</url>
+		</repository>
+-->
+		<repository>
+			<id>project.local</id>
+			<name>project_libs</name>
+			<url>file:${project.basedir}/lib</url>
 		</repository>
 
 	</repositories>
@@ -92,6 +98,17 @@
 			<version>1.4.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.orangepalantir</groupId>
+			<artifactId>leastsquares</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.simsilica</groupId>
+			<artifactId>lemur</artifactId>
+			<version>1.8.1</version>
+		</dependency>
 		<!-- ########### BEGIN GeoTools Dependencies ########### -->
 		<dependency>
 			<groupId>org.geotools</groupId>
@@ -146,10 +163,14 @@
 		<!-- ########### END JMonkeyEngine Dependencies ########### -->
 
 		<!-- ############# BEGIN Lemur Dependencies ############# -->
-<!-- 
-		 <dependency> <groupId>com.simsilica</groupId> <artifactId>lemur</artifactId> 
-			<version>1.8.1</version> <type>pom</type> </dependency>
-			 --> 
+	<!--
+		<dependency>
+			<groupId>com.simsilica</groupId>
+			<artifactId>lemur</artifactId>
+			<version>1.8.1</version>
+			<type>pom</type>
+		</dependency>
+-->
 		<!-- ############# END Lemur Dependencies ############# -->
 
 		<!-- ############# BEGIN LeastSquares Dependencies ############# -->
