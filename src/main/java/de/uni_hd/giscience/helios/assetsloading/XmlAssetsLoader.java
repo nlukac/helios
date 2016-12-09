@@ -325,7 +325,7 @@ public class XmlAssetsLoader {
 		// ########## END Read supported pulse frequencies ############
 
 		// ########### BEGIN Read all the rest #############
-		Double beamDiv_rad = (Double) getAttribute(scannerNode, "beamDivergence_rad", Double.class, 0.0d);
+		Double beamDiv_rad = (Double) getAttribute(scannerNode, "beamDivergence_rad", Double.class, 0.0003d);
 
 		Double pulseLength_ns = (Double) getAttribute(scannerNode, "pulseLength_ns", Double.class, 1.0d);
 
