@@ -17,9 +17,13 @@ Future features will include:
  - minEchoWidth (double) - Minimum echo return width [ns].
  - peakEnergy (double) - Scanner's peak emitting energy [W].
  - apertureDiameter (double) - Scanner's aperture diameter [m].
- - atmosphericVisbility (double) - Decrease of intensity due atmospheric scattering. Within range of [0, 1].
+ - atmosphericVisbility (double) - Decrease of intensity due atmospheric scattering. Within range [0, 1].
  - scannerEfficiency (double) - Efficiency of the scanner. Within range of [0, 1]. 
  - scannerWaveLength (double) - Scanner operating wavelength [ns].
+
+### Modification of MTF (obj material) file
+
+ - helios_reflectance (double) - Define the reflactance (albedo) of the given material. Within range [0, 1].
 
 ### Output point format
 
