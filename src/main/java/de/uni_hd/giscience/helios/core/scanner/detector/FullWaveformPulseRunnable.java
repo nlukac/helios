@@ -64,14 +64,14 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		double eta_sys = detector.scanner.FWF_settings.scannerEfficiency; // LiDAR scanner efficiency
 
 		// double visibilityDistance = 100; // atmospheric visibility [km]
-		double eta_atm = detector.scanner.FWF_settings.atmosphericVisibility; // calcAtmosphericAttenuation(distance, visibilityDistance, wavelength); // atmospheric attenuation
-
+		double eta_atm = 1.0; //detector.scanner.FWF_settings.atmosphericVisibility; // calcAtmosphericAttenuation(distance, visibilityDistance, wavelength); // atmospheric attenuation
+/*
 		double A = reflect_p;
 		double B = 1 - reflect_p;
 		double D = detector.scanner.FWF_settings.apartureDiameter; // receiver aperture diameter [m]
 		double reflectanceBRDF = ((Math.PI * D * D) / 4.0)
 				* ((A / Math.pow(Math.cos(incidenceAngle), 6)) * Math.exp(Math.tan(incidenceAngle) * Math.tan(incidenceAngle)) + B * Math.cos(incidenceAngle));
-
+*/
 		// transmitted energy with 'radius' away from center of the beam profile
 		double wavelength = detector.scanner.FWF_settings.scannerWaveLength / 1000000.0;
 		double w0 = (2 * wavelength) / (Math.PI * detector.scanner.cfg_device_beamDivergence_rad);
@@ -81,7 +81,7 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		double Pt2 = Pt * ((w0 / w) * (w0 / w)) * Math.exp((-2 * radius * radius) / (w * w));
 
 		// output intensity (based on: Carlsson et al, Signature simulation and signal analysis for 3-D laser radar, 2001)
-		return (Pt2 * reflectanceBRDF * Math.cos(incidenceAngle) * eta_atm * eta_sys);
+		return (Pt2 * reflect_p * Math.cos(incidenceAngle) * eta_atm * eta_sys);
 	}
 
 	// time distribution equation required to calculate the pulse beam energy increasing and decreasing in time
@@ -222,8 +222,8 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 
 		// 2. create full waveform with t_max entries
 
-		int cfg_numTimeBins = detector.scanner.FWF_settings.numFullwaveBins; // discretize the time wave into X bins (time_step = beam pulse length [ns] / X)
-		int cfg_numFullwaveBins = detector.scanner.FWF_settings.numTimeBins; // discretize the time full waveform into X bins (time_step = total_time [ns] / X)
+		int cfg_numTimeBins = detector.scanner.FWF_settings.numTimeBins; // discretize the time wave into X bins (time_step = beam pulse length [ns] / X)
+		int cfg_numFullwaveBins = detector.scanner.FWF_settings.numFullwaveBins; // discretize the time full waveform into X bins (time_step = total_time [ns] / X)
 
 		ArrayList<Double> time_wave = new ArrayList<Double>();
 		int peakIntensityIndex = timeWaveFunction(time_wave, cfg_numTimeBins);
@@ -282,7 +282,7 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		fit.setData(xs, zs);
         
 		for (int i = 0; i < fullwave.size(); ++i) {
-			if(fullwave.get(i)<1) continue;
+			if(fullwave.get(i)<0.0000001) continue;
 			
 			// peak detection
 			boolean hasPeak = true;

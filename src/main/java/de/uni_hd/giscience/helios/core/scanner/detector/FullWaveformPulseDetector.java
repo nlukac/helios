@@ -30,7 +30,7 @@ public class FullWaveformPulseDetector extends AbstractDetector {
 	}
 
 	
-	public void setOutputFilePath(String path) {
+	public synchronized void setOutputFilePath(String path) {
 
 		super.setOutputFilePath(path);
 
@@ -43,9 +43,8 @@ public class FullWaveformPulseDetector extends AbstractDetector {
 			File outputFilePath = new File(path);
 			outputFilePath.getParentFile().mkdirs();
 
-			fullWaveFileWriter = new BufferedWriter(new FileWriter(outputFilePath + "fullwave.txt"), 500000);
+			fullWaveFileWriter = new BufferedWriter(new FileWriter(outputFilePath + "fullwave.txt"), 2500000);
 		} catch (Exception e) {
-			mPointsFileWriter = null;
 			fullWaveFileWriter = null;
 		}
 	}
@@ -62,9 +61,8 @@ public class FullWaveformPulseDetector extends AbstractDetector {
 	}
 
 	synchronized public void shutdown() {
-
 		super.shutdown();
-
+		
 		if (fullWaveFileWriter != null) {
 			try {
 				fullWaveFileWriter.flush();

@@ -67,7 +67,7 @@ public abstract class AbstractDetector {
 
 			outputFilePath.getParentFile().mkdirs();
 
-			mPointsFileWriter = new BufferedWriter(new FileWriter(outputFilePath, true), 500000);
+			mPointsFileWriter = new BufferedWriter(new FileWriter(outputFilePath, true), 2500000);
 		} catch (Exception e) {
 			mPointsFileWriter = null;
 

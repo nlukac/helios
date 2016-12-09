@@ -158,26 +158,17 @@ public abstract class Simulation {
 		System.out.print("Waiting for completion of pulse computation tasks...");
 
 		// ########## BEGIN Loop that waits for the executor service to complete all tasks ###########
-		while (true) {
-
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-
-			if (mExecService.getQueue().size() == 0) {
-				mExecService.shutdown();
-
-				long timeFinishAll = System.nanoTime();
-
-				double secondsAll = (double) (timeFinishAll - timeStart) / 1000000000;
-
-				System.out.print("Pulse computation tasks finished in " + secondsAll + " sec.\n");
-
-				break;
-			}
+		mExecService.shutdown();
+		try {
+			mExecService.awaitTermination(60, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
+		long timeFinishAll = System.nanoTime();
+
+		double secondsAll = (double) (timeFinishAll - timeStart) / 1000000000;
+
+		System.out.print("Pulse computation tasks finished in " + secondsAll + " sec.\n");
 		// ########## END Loop that waits for the executor service to complete all tasks ###########
 
 		// Shutdown the simulation (e.g. close all file output streams. Implemented in derived classes.)
