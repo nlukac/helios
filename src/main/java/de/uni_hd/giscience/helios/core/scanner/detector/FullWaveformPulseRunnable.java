@@ -250,6 +250,10 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		
 		double minHitTime_ns= minHitDist_m / cfg_speedOfLight_mPerNanosec - detector.scanner.FWF_settings.pulseLength_ns;
 
+		if(detector.cfg_device_rangeMin_m/0.299792458 > minHitTime_ns) {
+			return;
+		}
+
 		// 4. multiply each sub-beam intensity with time_wave and add to the full waveform
 
 		// ########### BEGIN Iterate over waveform data ###########
@@ -281,11 +285,9 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		// ############ BEGIN Extract points from waveform data via Gaussian decomposition ################
 		int num_returns = 0;
 		int win_size = 10; // search for peaks around [-win_size, win_size]
-		double min_wave_width=detector.scanner.FWF_settings.minEchoWidth; // [ns]
+		//double min_wave_width=detector.scanner.FWF_settings.minEchoWidth; // [ns]
 
-		//int start_i = (int)((detector.cfg_device_rangeMin_m/0.299792458) / (maxHitTime_ns/fullwave.size()))+1;
-
-		for (int i = 0; i < fullwave.size(); ++i) {
+		for (int i=0; i < fullwave.size(); ++i) {
 			zs[i]=fullwave.get(i);
 		}
 
@@ -317,7 +319,11 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 			if (hasPeak) {
 				// Gaussian model fitting
 		        fit.setParameters(new double[]{0, fullwave.get(i), i, 1});
-		        fit.fitData();
+		        try {
+		        	fit.fitData();
+		        } catch (java.lang.RuntimeException e) { 
+					continue;
+				}
 		        double echo_width = (double)fit.getParameters()[3];
 		        echo_width=(echo_width/cfg_numFullwaveBins)*(maxHitTime_ns-minHitTime_ns);
 

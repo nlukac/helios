@@ -14,7 +14,7 @@ public class FWFSettings extends Asset {
 	public Double scannerWaveLength = 1550.0;
 	public Double beamDivergence_rad=0.0003;
 	public Double pulseLength_ns=4.0;
-	public Integer beamSampleQuality=5;
+	public Integer beamSampleQuality=3;
 	
 	
 	public FWFSettings() {

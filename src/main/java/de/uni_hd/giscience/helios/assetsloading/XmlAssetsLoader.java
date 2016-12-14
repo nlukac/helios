@@ -42,7 +42,7 @@ import de.uni_hd.giscience.helios.core.scanner.beamDeflector.ConicBeamDeflector;
 import de.uni_hd.giscience.helios.core.scanner.beamDeflector.FiberArrayBeamDeflector;
 import de.uni_hd.giscience.helios.core.scanner.beamDeflector.OscillatingMirrorBeamDeflector;
 import de.uni_hd.giscience.helios.core.scanner.beamDeflector.PolygonMirrorBeamDeflector;
-import de.uni_hd.giscience.helios.core.scanner.detector.SingleRayPulseDetector;
+//import de.uni_hd.giscience.helios.core.scanner.detector.SingleRayPulseDetector;
 import de.uni_hd.giscience.helios.core.scanner.detector.FullWaveformPulseDetector;
 import de.uni_hd.giscience.helios.core.scene.Scene;
 import de.uni_hd.giscience.helios.core.scene.primitives.Primitive;

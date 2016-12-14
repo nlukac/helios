@@ -69,6 +69,7 @@ public class Scanner extends Asset {
 
 	public void applySettingsFWF(FWFSettings settings) {
 		FWF_settings=settings;
+		
 	}
 
 	public void doSimStep(ExecutorService execService) {

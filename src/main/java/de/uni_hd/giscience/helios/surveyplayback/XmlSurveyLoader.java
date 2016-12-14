@@ -67,6 +67,13 @@ public class XmlSurveyLoader extends XmlAssetsLoader {
 		// FWF info
 		Element scannerFWFSettingsNode = (Element) surveyNode.getElementsByTagName("FWFSettings").item(0);
 		survey.scanner.applySettingsFWF((FWFSettings)createFWFSettingsFromXml(scannerFWFSettingsNode));
+		 
+		// temp backward compatibility
+		if(survey.scanner.cfg_device_beamDivergence_rad>0) 
+			survey.scanner.FWF_settings.beamDivergence_rad=survey.scanner.cfg_device_beamDivergence_rad;
+
+		if(survey.scanner.getPulseLength_ns()>0) 
+			survey.scanner.FWF_settings.pulseLength_ns=survey.scanner.getPulseLength_ns();
 		
 		// #################### BEGIN Read point cloud color ####################
 
