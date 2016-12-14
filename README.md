@@ -19,9 +19,9 @@ Future features will include:
  - atmosphericVisbility (double) - Decrease of intensity due atmospheric scattering. Within range [0, 1].
  - scannerEfficiency (double) - Efficiency of the scanner. Within range of [0, 1]. 
  - scannerWaveLength (double) - Scanner's operating wavelength [ns].
- - beamDivergence_rad (double) - Scanner's beam divergence angle [rad].
- - pulseLength_ns (double) - Scanner's pulse length [ns].
- - beamSampleQuality (integer) - Quality of spatial discretization of the subrays (higher value = more subrays within the laser cone).
+ - beamDivergence_rad (double) - Scanner's beam divergence angle [rad].  Used if not defined in \<scanner>.
+ - pulseLength_ns (double) - Scanner's pulse length [ns]. Used if not defined in \<scanner>.
+ - beamSampleQuality (integer) - Quality of spatial discretization of the subrays (higher value = more subrays within the laser cone). Default set to 3.
 
 ### Modification of MTF (obj material) file
 
