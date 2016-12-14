@@ -61,7 +61,7 @@ public class Scanner extends Asset {
 		// Configure scanner:
 		this.setActive(settings.active);
 		this.setPulseFreq_Hz(settings.pulseFreq_Hz);
-		
+
 		detector.applySettings(settings);
 		scannerHead.applySettings(settings);
 		beamDeflector.applySettings(settings);

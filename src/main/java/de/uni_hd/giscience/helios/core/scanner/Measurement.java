@@ -13,5 +13,6 @@ public class Measurement {
 	public double intensity = 0;
 	public double echo_width = 0;
 	public int returnNumber = 0;
+	public int pulseReturnNumber=0;
 	public int fullwaveIndex = 0;
 }

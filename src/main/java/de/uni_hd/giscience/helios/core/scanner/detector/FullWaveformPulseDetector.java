@@ -16,7 +16,6 @@ import de.uni_hd.giscience.helios.core.scanner.ScannerSettings;
 public class FullWaveformPulseDetector extends AbstractDetector {
 
 	BufferedWriter fullWaveFileWriter = null;
-	public int cfg_setting_beamSampleQuality = 5;
 
 	public FullWaveformPulseDetector(Scanner scanner, double accuracy_m, double range_min) {
 		super(scanner, accuracy_m, range_min);
@@ -75,7 +74,7 @@ public class FullWaveformPulseDetector extends AbstractDetector {
 	}
 
 	// TODO 2: Move this to pulse class (or somewhere else)
-	public synchronized void writeFullWave(ArrayList<Double> fullwave, Integer fullwave_index, Double max_time, Vector3D beamOrigin, Vector3D beamDir, Long gpstime) {
+	public synchronized void writeFullWave(ArrayList<Double> fullwave, Integer fullwave_index, Double min_time, Double max_time, Vector3D beamOrigin, Vector3D beamDir, Long gpstime) {
 		// ############# BEGIN Writefullwave to output file ############
 		if (fullWaveFileWriter != null) {
 			String line = fullwave_index.toString() + " ";
@@ -85,6 +84,7 @@ public class FullWaveformPulseDetector extends AbstractDetector {
 			line += ((Double) beamDir.getX()).toString() + " ";
 			line += ((Double) beamDir.getY()).toString() + " ";
 			line += ((Double) beamDir.getZ()).toString() + " ";
+			line += min_time.toString() + " ";
 			line += max_time.toString() + " ";
 
 			// add GPSTIME (since 1980) in seconds

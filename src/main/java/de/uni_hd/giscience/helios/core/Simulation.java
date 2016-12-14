@@ -43,7 +43,7 @@ public abstract class Simulation {
 		int numThreads = Runtime.getRuntime().availableProcessors();
 		int queueSize = 5000;
 		ArrayBlockingQueue<Runnable> queue = new ArrayBlockingQueue<Runnable>(queueSize, true);
-		this.mExecService = new ThreadPoolExecutor(numThreads, numThreads, 1L, TimeUnit.MINUTES, queue, new ThreadPoolExecutor.CallerRunsPolicy());
+		this.mExecService = new ThreadPoolExecutor(numThreads, numThreads, 2L, TimeUnit.MINUTES, queue, new ThreadPoolExecutor.CallerRunsPolicy());
 		// ######### END Configure pulse simulation threads pool ##########
 	};
 
@@ -160,7 +160,7 @@ public abstract class Simulation {
 		// ########## BEGIN Loop that waits for the executor service to complete all tasks ###########
 		mExecService.shutdown();
 		try {
-			mExecService.awaitTermination(60, TimeUnit.SECONDS);
+			mExecService.awaitTermination(600, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

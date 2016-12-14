@@ -9,12 +9,15 @@ import java.util.TreeMap;
 import org.apache.commons.math3.geometry.euclidean.threed.Rotation;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 
+import de.uni_hd.giscience.helios.core.scanner.Measurement;
 import de.uni_hd.giscience.helios.core.scene.RaySceneIntersection;
 import de.uni_hd.giscience.helios.core.scene.Scene;
 
 import org.orangepalantir.leastsquares.Fitter;
 import org.orangepalantir.leastsquares.Function;
+import org.orangepalantir.leastsquares.fitters.MarquardtFitter;
 import org.orangepalantir.leastsquares.fitters.NonLinearSolver;
+
 
 public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
     Function gaussianModel = new Function(){
@@ -74,7 +77,7 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 */
 		// transmitted energy with 'radius' away from center of the beam profile
 		double wavelength = detector.scanner.FWF_settings.scannerWaveLength / 1000000.0;
-		double w0 = (2 * wavelength) / (Math.PI * detector.scanner.cfg_device_beamDivergence_rad);
+		double w0 = (2 * wavelength) / (Math.PI * detector.scanner.FWF_settings.beamDivergence_rad);
 		double omega = (distance * wavelength) / (Math.PI * w0 * w0);
 		double omega0 = 1 - distance / detector.cfg_device_rangeMin_m;
 		double w = w0 * Math.sqrt(omega * omega + omega0 * omega0);
@@ -87,8 +90,8 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 	// time distribution equation required to calculate the pulse beam energy increasing and decreasing in time
 	// (based on: Carlsson et al, Signature simulation and signal analysis for 3-D laser radar, 2001)
 	private int timeWaveFunction(ArrayList<Double> timeWave, int numBins) {
-		double ns_step = detector.scanner.getPulseLength_ns() / (double) numBins;
-		double tau = (detector.scanner.getPulseLength_ns() * 0.5) / 3.5;
+		double ns_step = detector.scanner.FWF_settings.pulseLength_ns / (double) numBins;
+		double tau = (detector.scanner.FWF_settings.pulseLength_ns * 0.5) / 3.5;
 
 		int peakIntensityIndex = 0;
 		double peakIntensityTmp = 0;
@@ -104,7 +107,7 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		return (peakIntensityIndex);
 	}
 
-	private void captureFullWave(ArrayList<Double> fullwave, int fullwaveIndex, double max_time, Vector3D beamOrigin, Vector3D beamDir, Long gpstime) {
+	private void captureFullWave(ArrayList<Double> fullwave, int fullwaveIndex, double min_time, double max_time, Vector3D beamOrigin, Vector3D beamDir, Long gpstime) {
 		// add noise to fullwave
 		/*
 		double precision = 0.01 * Collections.max(fullwave);
@@ -112,7 +115,7 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		error += boxMullerRandom(0.0, this.detector.cfg_device_accuracy_m / 2);
 		 for (Double f : fullwave) f+=error;
 		*/
-		fwDetector.writeFullWave(fullwave, fullwaveIndex, max_time, beamOrigin, beamDir, gpstime);
+		fwDetector.writeFullWave(fullwave, fullwaveIndex, min_time, max_time, beamOrigin, beamDir, gpstime);
 	}
 
 	@Override
@@ -143,10 +146,10 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		// and the scene objects that caused them:
 		ArrayList<RaySceneIntersection> intersects = new ArrayList<>();
 
-		double radiusStep_rad = this.fwDetector.scanner.cfg_device_beamDivergence_rad / this.fwDetector.cfg_setting_beamSampleQuality;
+		double radiusStep_rad =  detector.scanner.FWF_settings.beamDivergence_rad / detector.scanner.FWF_settings.beamSampleQuality;
 
 		// ######## BEGIN Outer loop over radius steps from beam center to outer edge ##############
-		for (int radiusStep = 0; radiusStep < fwDetector.cfg_setting_beamSampleQuality; radiusStep++) {
+		for (int radiusStep = 0; radiusStep < detector.scanner.FWF_settings.beamSampleQuality; radiusStep++) {
 
 			double subrayDivergenceAngle_rad = radiusStep * radiusStep_rad;
 
@@ -182,6 +185,8 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 
 					// Distance between beam origin and intersection:
 					double distance = intersect.point.distance(absoluteBeamOrigin);
+					
+					if(detector.cfg_device_rangeMin_m>distance) continue;
 
 					// Distance between the beam's center line and the intersection point:
 					double radius = Math.sin(subrayDivergenceAngle_rad) * distance;
@@ -199,6 +204,7 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 
 		// ############ BEGIN Step 1: Find maximum hit distance, abort if nothing was hit #############
 		double maxHitDist_m = 0;
+		double minHitDist_m = 9999999;
 
 		Iterator<Entry<Double, Double>> iter = reflections.entrySet().iterator();
 
@@ -209,6 +215,9 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 
 			if (entryDistance > maxHitDist_m) {
 				maxHitDist_m = entryDistance;
+			}
+			if (entryDistance < minHitDist_m) {
+				minHitDist_m = entryDistance;
 			}
 		}
 
@@ -236,13 +245,15 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		double[] zs = new double[fullwave.size()];
 		//
     	
-		// 3. calc time at maximum distance (i.e. total beam time)
-		double maxHitTime_ns = maxHitDist_m / cfg_speedOfLight_mPerNanosec + detector.scanner.getPulseLength_ns(); // [ns]
+		// 3. calc time at minimum and maximum distance (i.e. total beam time in fwf signal)
+		double maxHitTime_ns = maxHitDist_m / cfg_speedOfLight_mPerNanosec + detector.scanner.FWF_settings.pulseLength_ns; // [ns]
+		
+		double minHitTime_ns= minHitDist_m / cfg_speedOfLight_mPerNanosec - detector.scanner.FWF_settings.pulseLength_ns;
 
 		// 4. multiply each sub-beam intensity with time_wave and add to the full waveform
-		iter = reflections.entrySet().iterator();
 
 		// ########### BEGIN Iterate over waveform data ###########
+		iter = reflections.entrySet().iterator();
 		while (iter.hasNext()) {
 			Entry<Double, Double> entry = (Entry<Double, Double>) iter.next();
 
@@ -252,7 +263,7 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 
 			double wavePeakTime_ns = (entryDistance_m / cfg_speedOfLight_mPerNanosec); // [ns]
 
-			double blubb = (detector.scanner.getPulseLength_ns() / (double) cfg_numTimeBins);
+			double blubb = (detector.scanner.FWF_settings.pulseLength_ns / (double) cfg_numTimeBins);
 
 			double time_start = wavePeakTime_ns - (peakIntensityIndex * blubb);
 
@@ -260,7 +271,7 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 
 				double time_tmp = time_start + i * blubb;
 
-				int fullwaveBinIndex = (int) ((time_tmp / maxHitTime_ns) * cfg_numFullwaveBins);
+				int fullwaveBinIndex = (int) (((time_tmp-minHitTime_ns) / (maxHitTime_ns-minHitTime_ns)) * cfg_numFullwaveBins);
 				fullwave.set(fullwaveBinIndex, time_wave.get(i) * entryIntensity);
 			}
 		}
@@ -278,23 +289,25 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 			zs[i]=fullwave.get(i);
 		}
 
-		Fitter fit = new NonLinearSolver(gaussianModel);
+		Fitter fit = new MarquardtFitter(gaussianModel);
 		fit.setData(xs, zs);
+		
+		ArrayList<Measurement> PointsMeasurement=new ArrayList<Measurement>(); // temp solution
         
 		for (int i = 0; i < fullwave.size(); ++i) {
-			if(fullwave.get(i)<0.0000001) continue;
+			if(fullwave.get(i)<0.00001) continue;
 			
 			// peak detection
 			boolean hasPeak = true;
 			for (int j = Math.max(0, i - 1); j > Math.max(0, i - win_size); j--) {
-				if (fullwave.get(j) >= fullwave.get(i)) {
+				if (fullwave.get(j)<0.00001 || fullwave.get(j) >= fullwave.get(i)) {
 					hasPeak = false;
 					break;
 				}
 			}
 			if(hasPeak) {
 				for (int j = Math.min(fullwave.size(), i + 1); j < Math.min(fullwave.size(), i + win_size); j++) {
-					if (fullwave.get(j) >= fullwave.get(i)) {
+					if (fullwave.get(j)<0.00001 ||fullwave.get(j) >= fullwave.get(i)) {
 						hasPeak = false;
 						break;
 					}
@@ -306,15 +319,14 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		        fit.setParameters(new double[]{0, fullwave.get(i), i, 1});
 		        fit.fitData();
 		        double echo_width = (double)fit.getParameters()[3];
+		        echo_width=(echo_width/cfg_numFullwaveBins)*(maxHitTime_ns-minHitTime_ns);
 
-				if(echo_width<min_wave_width) {
+				if(echo_width<0.1)  {  //min_wave_width) {
 					continue;
 				}
 					
 				// ########## END echo location, intensity and width extraction via Gaussian decomposition ###########
-				
-				
-				double distance = cfg_speedOfLight_mPerNanosec * ((i / (double) cfg_numFullwaveBins) * maxHitTime_ns);
+				double distance = cfg_speedOfLight_mPerNanosec * ((i / (double) cfg_numFullwaveBins) * (maxHitTime_ns-minHitTime_ns)+minHitTime_ns);
 
 				// ########## BEGIN Build list of objects that produced this return ###########
 			
@@ -336,8 +348,16 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 					hitObject = closestIntersection.prim.part.mId;
 				}
 				// ########## END Build list of objects that produced this return ###########
-
-				capturePoint(absoluteBeamOrigin, beamDir, distance, fullwave.get(i), echo_width, num_returns + 1, currentPulseNum, hitObject);
+				Measurement tmp=new Measurement();
+				tmp.beamOrigin=absoluteBeamOrigin;
+				tmp.beamDirection=beamDir;
+				tmp.distance=distance;
+				tmp.echo_width=echo_width;
+				tmp.intensity= fullwave.get(i);
+				tmp.fullwaveIndex=currentPulseNum;
+				tmp.hitObjectId=hitObject;
+				tmp.returnNumber=num_returns + 1;
+				PointsMeasurement.add(tmp);
 
 				++num_returns;
 			}
@@ -346,8 +366,13 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		// ############ END Extract points from waveform data ################
 
 		if (num_returns > 0) {
+			for(int i=0;i<PointsMeasurement.size();++i)  {
+				PointsMeasurement.get(i).pulseReturnNumber=num_returns;
+				capturePoint(PointsMeasurement.get(i));
+			}
+
 			detector.scanner.setLastPulseWasHit(true);
-			captureFullWave(fullwave, currentPulseNum, maxHitTime_ns, absoluteBeamOrigin, beamDir, currentGpsTime);
+			captureFullWave(fullwave, currentPulseNum, minHitTime_ns, maxHitTime_ns, absoluteBeamOrigin, beamDir, currentGpsTime);
 		}
 
 		// ############ END Create full waveform ##############

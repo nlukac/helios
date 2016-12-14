@@ -330,6 +330,7 @@ public class XmlAssetsLoader {
 		Double pulseLength_ns = (Double) getAttribute(scannerNode, "pulseLength_ns", Double.class, 1.0d);
 
 		String visModel = (String) getAttribute(scannerNode, "visModel", String.class, "");
+		
 		// ########### END Read all the rest #############
 
 		Scanner scanner = new Scanner(beamDiv_rad, emitterPosition, emitterAttitude, pulseFreqs, pulseLength_ns, visModel);
@@ -410,7 +411,6 @@ public class XmlAssetsLoader {
 		ScannerSettings template = new ScannerSettings();
 
 		template.active = true;
-		template.beamSampleQuality = 1;
 		template.headRotatePerSec_rad = 0d;
 		template.headRotateStart_rad = 0d;
 		template.headRotateStop_rad = 0d;
@@ -478,6 +478,9 @@ public class XmlAssetsLoader {
 		settings.scannerEfficiency = (Double) getAttribute(node, "scannerEfficiency", Double.class, settings.scannerEfficiency);
 		settings.atmosphericVisibility = (Double) getAttribute(node, "atmosphericVisibility", Double.class, settings.atmosphericVisibility);
 		settings.scannerWaveLength = (Double) getAttribute(node, "scannerWaveLength", Double.class, settings.scannerWaveLength);
+		settings.beamDivergence_rad = (Double) getAttribute(node, "beamDivergence_rad", Double.class, settings.beamDivergence_rad);
+		settings.pulseLength_ns = (Double) getAttribute(node, "pulseLength_ns", Double.class, settings.pulseLength_ns);
+		settings.beamSampleQuality = (Integer) getAttribute(node, "beamSampleQuality", Integer.class, settings.beamSampleQuality);
 
 		return settings;
 	}

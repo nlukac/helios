@@ -12,7 +12,11 @@ public class FWFSettings extends Asset {
 	public Double scannerEfficiency = 0.9;
 	public Double atmosphericVisibility = 0.9;
 	public Double scannerWaveLength = 1550.0;
-
+	public Double beamDivergence_rad=0.0003;
+	public Double pulseLength_ns=4.0;
+	public Integer beamSampleQuality=5;
+	
+	
 	public FWFSettings() {
 
 	}
@@ -30,5 +34,8 @@ public class FWFSettings extends Asset {
 		this.scannerEfficiency = other.scannerEfficiency;
 		this.atmosphericVisibility = other.atmosphericVisibility;
 		this.scannerWaveLength = other.scannerWaveLength;
+		this.beamDivergence_rad = other.beamDivergence_rad;
+		this.pulseLength_ns = other.pulseLength_ns;
+		this.beamSampleQuality = other.beamSampleQuality;
 	}
 }
