@@ -84,7 +84,9 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		double Pt2 = Pt * ((w0 / w) * (w0 / w)) * Math.exp((-2 * radius * radius) / (w * w));
 
 		// output intensity (based on: Carlsson et al, Signature simulation and signal analysis for 3-D laser radar, 2001)
-		return (Pt2 * reflect_p * Math.cos(incidenceAngle) * eta_atm * eta_sys);
+		double intensity=Pt2 * reflect_p * (1-Math.cos(incidenceAngle)) * eta_atm * eta_sys;
+		
+		return (intensity);
 	}
 
 	// time distribution equation required to calculate the pulse beam energy increasing and decreasing in time
