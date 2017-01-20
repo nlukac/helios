@@ -84,7 +84,7 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		double Pt2 = Pt * ((w0 / w) * (w0 / w)) * Math.exp((-2 * radius * radius) / (w * w));
 
 		// output intensity (based on: Carlsson et al, Signature simulation and signal analysis for 3-D laser radar, 2001)
-		double intensity=Pt2 * reflect_p * (1-Math.cos(incidenceAngle)) * eta_atm * eta_sys;
+		double intensity=Pt2 * reflect_p * (Math.cos(incidenceAngle)) * eta_atm * eta_sys;
 		
 		return (intensity);
 	}
@@ -286,7 +286,7 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 
 		// ############ BEGIN Extract points from waveform data via Gaussian decomposition ################
 		int num_returns = 0;
-		int win_size = 10; // search for peaks around [-win_size, win_size]
+		int win_size = 5; // search for peaks around [-win_size, win_size]
 		//double min_wave_width=detector.scanner.FWF_settings.minEchoWidth; // [ns]
 
 		for (int i=0; i < fullwave.size(); ++i) {
@@ -299,19 +299,19 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		ArrayList<Measurement> PointsMeasurement=new ArrayList<Measurement>(); // temp solution
         
 		for (int i = 0; i < fullwave.size(); ++i) {
-			if(fullwave.get(i)<0.00001) continue;
+			if(fullwave.get(i)<0.00000001) continue;
 			
 			// peak detection
 			boolean hasPeak = true;
 			for (int j = Math.max(0, i - 1); j > Math.max(0, i - win_size); j--) {
-				if (fullwave.get(j)<0.00001 || fullwave.get(j) >= fullwave.get(i)) {
+				if (fullwave.get(j)<0.00000001 || fullwave.get(j) >= fullwave.get(i)) {
 					hasPeak = false;
 					break;
 				}
 			}
 			if(hasPeak) {
 				for (int j = Math.min(fullwave.size(), i + 1); j < Math.min(fullwave.size(), i + win_size); j++) {
-					if (fullwave.get(j)<0.00001 ||fullwave.get(j) >= fullwave.get(i)) {
+					if (fullwave.get(j)<0.00000001 ||fullwave.get(j) >= fullwave.get(i)) {
 						hasPeak = false;
 						break;
 					}
