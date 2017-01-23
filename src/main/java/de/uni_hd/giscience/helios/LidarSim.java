@@ -58,7 +58,8 @@ public class LidarSim {
 		}
 
 		if (surveyFilePath.equals("")) {
-			surveyFilePath = "data/surveys/demo/tls_arbaro_demo.xml";
+		//	surveyFilePath = "data/surveys/als_PN1.xml";
+			surveyFilePath = "data/surveys/tls_PoN3.xml";
 		}
 
 		// Load survey description from XML file:

@@ -15,7 +15,7 @@ public class FWFSettings extends Asset {
 	public Double beamDivergence_rad=0.0003;
 	public Double pulseLength_ns=4.0;
 	public Integer beamSampleQuality=3;
-	
+	public Integer winSize = 10;
 	
 	public FWFSettings() {
 
@@ -37,5 +37,6 @@ public class FWFSettings extends Asset {
 		this.beamDivergence_rad = other.beamDivergence_rad;
 		this.pulseLength_ns = other.pulseLength_ns;
 		this.beamSampleQuality = other.beamSampleQuality;
+		this.winSize = other.winSize;
 	}
 }

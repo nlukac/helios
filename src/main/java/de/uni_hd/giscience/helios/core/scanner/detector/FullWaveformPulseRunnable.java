@@ -286,7 +286,7 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 
 		// ############ BEGIN Extract points from waveform data via Gaussian decomposition ################
 		int num_returns = 0;
-		int win_size = 5; // search for peaks around [-win_size, win_size]
+		int win_size = detector.scanner.FWF_settings.winSize; // search for peaks around [-win_size, win_size]
 		//double min_wave_width=detector.scanner.FWF_settings.minEchoWidth; // [ns]
 
 		for (int i=0; i < fullwave.size(); ++i) {
@@ -299,19 +299,19 @@ public class FullWaveformPulseRunnable extends AbstractPulseRunnable {
 		ArrayList<Measurement> PointsMeasurement=new ArrayList<Measurement>(); // temp solution
         
 		for (int i = 0; i < fullwave.size(); ++i) {
-			if(fullwave.get(i)<0.00000001) continue;
+			if(fullwave.get(i)<0.001) continue;
 			
 			// peak detection
 			boolean hasPeak = true;
 			for (int j = Math.max(0, i - 1); j > Math.max(0, i - win_size); j--) {
-				if (fullwave.get(j)<0.00000001 || fullwave.get(j) >= fullwave.get(i)) {
+				if (fullwave.get(j)<0.001 || fullwave.get(j) >= fullwave.get(i)) {
 					hasPeak = false;
 					break;
 				}
 			}
 			if(hasPeak) {
 				for (int j = Math.min(fullwave.size(), i + 1); j < Math.min(fullwave.size(), i + win_size); j++) {
-					if (fullwave.get(j)<0.00000001 ||fullwave.get(j) >= fullwave.get(i)) {
+					if (fullwave.get(j)<0.001 ||fullwave.get(j) >= fullwave.get(i)) {
 						hasPeak = false;
 						break;
 					}

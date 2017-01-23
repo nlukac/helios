@@ -44,6 +44,7 @@ import de.uni_hd.giscience.helios.core.scanner.beamDeflector.OscillatingMirrorBe
 import de.uni_hd.giscience.helios.core.scanner.beamDeflector.PolygonMirrorBeamDeflector;
 //import de.uni_hd.giscience.helios.core.scanner.detector.SingleRayPulseDetector;
 import de.uni_hd.giscience.helios.core.scanner.detector.FullWaveformPulseDetector;
+import de.uni_hd.giscience.helios.core.scanner.detector.SingleRayPulseDetector;
 import de.uni_hd.giscience.helios.core.scene.Scene;
 import de.uni_hd.giscience.helios.core.scene.primitives.Primitive;
 import de.uni_hd.giscience.helios.core.scene.primitives.Vertex;
@@ -400,6 +401,7 @@ public class XmlAssetsLoader {
 		Double rangeMin_m = (Double) getAttribute(scannerNode, "rangeMin_m", Double.class, 0.0d);
 		Double accuracy_m = (Double) getAttribute(scannerNode, "accuracy_m", Double.class, 0.0d);
 		scanner.detector = new FullWaveformPulseDetector(scanner, accuracy_m, rangeMin_m);
+	//	scanner.detector = new SingleRayPulseDetector(scanner, accuracy_m, rangeMin_m);
 		// ############################ END Configure detector ###############################
 
 		return scanner;
@@ -481,6 +483,7 @@ public class XmlAssetsLoader {
 		settings.beamDivergence_rad = (Double) getAttribute(node, "beamDivergence_rad", Double.class, settings.beamDivergence_rad);
 		settings.pulseLength_ns = (Double) getAttribute(node, "pulseLength_ns", Double.class, settings.pulseLength_ns);
 		settings.beamSampleQuality = (Integer) getAttribute(node, "beamSampleQuality", Integer.class, settings.beamSampleQuality);
+		settings.winSize = (Integer) getAttribute(node, "winSize", Integer.class, settings.winSize);
 
 		return settings;
 	}
