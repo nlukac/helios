@@ -14,6 +14,7 @@ Future features will include:
 ### Configuration variables (for \<FWFSettings \> in \<survey\> XML file)
  - numTimeBins (integer) - Number of bins to discretize the temporal domain of individual return.
  - numFullwaveBins (integer) - Total number of bins to discretize the entire temporal domain of FWF signal.
+ - winSize (integer) - Number of neigbhouring samples to check (i.e. 1D window size) when finding local maxima for Gaussian decomposition.
  - peakEnergy (double) - Scanner's peak emitting energy [W].
  - apertureDiameter (double) - Scanner's aperture diameter [m].
  - atmosphericVisbility (double) - Decrease of intensity due atmospheric scattering. Within range [0, 1].
